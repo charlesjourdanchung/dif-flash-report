@@ -1333,9 +1333,19 @@ function showTab(id, btn) {
 
 function toggleCurrency() {
   currIsUSD = !currIsUSD;
-  document.getElementById('curr-toggle').classList.toggle('usd', currIsUSD);
-  document.getElementById('lbl-idr').style.opacity = currIsUSD ? '0.4' : '1';
-  document.getElementById('lbl-usd').style.opacity = currIsUSD ? '1' : '0.4';
+  // Sync both desktop and mobile toggles
+  ['curr-toggle','curr-toggle-m'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('usd', currIsUSD);
+  });
+  ['lbl-idr','lbl-idr-m'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.opacity = currIsUSD ? '0.4' : '1';
+  });
+  ['lbl-usd','lbl-usd-m'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.opacity = currIsUSD ? '1' : '0.4';
+  });
   const mio = currIsUSD ? '(USD Mio)' : '(IDR Mio)';
   document.getElementById('kpi-disbamt-unit').textContent = mio;
   document.getElementById('kpi-aum-unit').textContent = mio;
