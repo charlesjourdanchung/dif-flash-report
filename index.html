@@ -687,7 +687,7 @@ tr:hover td{background:rgba(255,248,245,0.7)}
       <div class="card">
         <div class="card-title">Open Loans — by Ageing Bucket</div>
         <table>
-          <thead><tr><th>Bucket</th><th class="r"># Loans</th><th class="r">%</th><th class="r">AUM <span class="card-unit">(IDR Mio)</span></th><th class="r">%</th></tr></thead>
+          <thead><tr><th>Bucket</th><th class="r"># Loans</th><th class="r">%</th><th class="r">AUM <span class="card-unit lt-aum-unit">(IDR Mio)</span></th><th class="r">%</th></tr></thead>
           <tbody id="open-age-body"></tbody>
         </table>
       </div>
@@ -703,7 +703,7 @@ tr:hover td{background:rgba(255,248,245,0.7)}
       <div class="card">
         <div class="card-title">Open Loans — by Ticket Size</div>
         <table>
-          <thead><tr><th>Bucket</th><th class="r"># Loans</th><th class="r">%</th><th class="r">AUM <span class="card-unit">(IDR Mio)</span></th><th class="r">%</th></tr></thead>
+          <thead><tr><th>Bucket</th><th class="r"># Loans</th><th class="r">%</th><th class="r">AUM <span class="card-unit lt-aum-unit">(IDR Mio)</span></th><th class="r">%</th></tr></thead>
           <tbody id="open-ticket-body"></tbody>
         </table>
       </div>
@@ -1143,7 +1143,7 @@ function renderDisbArea(mtd, lmtd, lm) {
     <td class="r" data-label="LM #">${fmtNum(lnTotLm)}</td><td class="r" data-label="LM %">100%</td>`;
   loansBody.appendChild(totLn);
 
-  const fmtGt = (val) => u ? fmtNum(val/FX,1) : fmtNum(val);
+  const fmtGt = (val) => u ? fmtNum(val/FX,2) : fmtNum(val);
   const totGmv = document.createElement('tr');
   totGmv.className = 'bold';
   totGmv.innerHTML = `<td>Total</td>
@@ -1169,16 +1169,17 @@ function renderLoanTracker(mtd, lmtd, lm) {
   AGE_BUCKETS.forEach((bk, i) => {
     const n2=openNArr[i], a=openAUMArr[i];
     const tr = document.createElement('tr');
+    const fmtA = (val) => u ? fmtNum(val/FX,2) : fmtNum(val);
     tr.innerHTML = `<td>${bk}</td>
       <td class="r" data-label="# Loans">${fmtNum(n2)}</td>
       <td class="r" data-label="# %">${totOpenN  ? fmtNum(n2/totOpenN*100,1)+'%'  : '—'}</td>
-      <td class="r" data-label="AUM">${fmtNum(a)}</td>
+      <td class="r" data-label="AUM">${fmtA(a)}</td>
       <td class="r" data-label="AUM %">${totOpenAUM ? fmtNum(a/totOpenAUM*100,1)+'%' : '—'}</td>`;
     openAgeBody.appendChild(tr);
   });
   const totTrOA = document.createElement('tr');
   totTrOA.className = 'bold';
-  totTrOA.innerHTML = `<td>Total</td><td class="r" data-label="# Loans">${fmtNum(totOpenN)}</td><td class="r" data-label="# %">100%</td><td class="r" data-label="AUM">${fmtNum(totOpenAUM)}</td><td class="r" data-label="AUM %">100%</td>`;
+  totTrOA.innerHTML = `<td>Total</td><td class="r" data-label="# Loans">${fmtNum(totOpenN)}</td><td class="r" data-label="# %">100%</td><td class="r" data-label="AUM">${u ? fmtNum(totOpenAUM/FX,2) : fmtNum(totOpenAUM)}</td><td class="r" data-label="AUM %">100%</td>`;
   openAgeBody.appendChild(totTrOA);
 
   // Closed ageing
@@ -1222,16 +1223,17 @@ function renderLoanTracker(mtd, lmtd, lm) {
   });
   TICK_BUCKETS.forEach((bk, i) => {
     const tr = document.createElement('tr');
+    const fmtT = (val) => u ? fmtNum(val/FX,2) : fmtNum(val);
     tr.innerHTML = `<td>${bk}</td>
       <td class="r" data-label="# Loans">${fmtNum(otNArr[i])}</td>
       <td class="r" data-label="# %">${totOTN ? fmtNum(otNArr[i]/totOTN*100,1)+'%' : '—'}</td>
-      <td class="r" data-label="AUM">${fmtNum(otAArr[i])}</td>
+      <td class="r" data-label="AUM">${fmtT(otAArr[i])}</td>
       <td class="r" data-label="AUM %">${totOTA ? fmtNum(otAArr[i]/totOTA*100,1)+'%' : '—'}</td>`;
     openTickBody.appendChild(tr);
   });
   const totTrOT = document.createElement('tr');
   totTrOT.className = 'bold';
-  totTrOT.innerHTML = `<td>Total</td><td class="r" data-label="# Loans">${fmtNum(totOTN)}</td><td class="r" data-label="# %">100%</td><td class="r" data-label="AUM">${fmtNum(totOTA)}</td><td class="r" data-label="AUM %">100%</td>`;
+  totTrOT.innerHTML = `<td>Total</td><td class="r" data-label="# Loans">${fmtNum(totOTN)}</td><td class="r" data-label="# %">100%</td><td class="r" data-label="AUM">${u ? fmtNum(totOTA/FX,2) : fmtNum(totOTA)}</td><td class="r" data-label="AUM %">100%</td>`;
   openTickBody.appendChild(totTrOT);
 
   // Closed ticket
@@ -1352,7 +1354,8 @@ function toggleCurrency() {
   document.getElementById('kpi-avg-unit').textContent = currIsUSD ? '(USD K)' : '(IDR Mio)';
   document.querySelectorAll('.txn-unit').forEach(el => el.textContent = mio);
   document.querySelectorAll('.fin-unit').forEach(el => el.textContent = mio);
-  document.querySelectorAll('.gmv-unit').forEach(el => el.textContent = currIsUSD ? '(USD K)' : '(IDR Mio)');
+  document.querySelectorAll('.gmv-unit').forEach(el => el.textContent = currIsUSD ? '(USD Mio)' : '(IDR Mio)');
+  document.querySelectorAll('.lt-aum-unit').forEach(el => el.textContent = currIsUSD ? '(USD Mio)' : '(IDR Mio)');
   if (selectedDate) renderAll(selectedDate);
 }
 
