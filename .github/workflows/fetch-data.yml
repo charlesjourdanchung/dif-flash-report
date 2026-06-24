@@ -1,0 +1,34 @@
+name: Fetch Sheet Data
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run fetch script
+        env:
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+        run: python3 scripts/fetch_data.py
+
+      - name: Commit and push data.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          if git diff --staged --quiet; then
+            echo "No changes — skipping commit"
+          else
+            git commit -m "chore: refresh data $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
