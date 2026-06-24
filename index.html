@@ -288,88 +288,15 @@ tr:hover td{background:rgba(255,248,245,0.7)}
   .card{padding:12px}
   .card-title{font-size:12px}
 
-  /* ── Vertical table layout ── */
-  /* Hide thead on mobile */
-  table thead{display:none}
-
-  /* Each row becomes a block card */
-  table tr{
-    display:block;
-    background:rgba(255,255,255,0.45);
-    border:1px solid rgba(255,255,255,0.70);
-    border-radius:10px;
-    margin-bottom:8px;
-    padding:8px 10px;
-  }
-  table tr:last-child{margin-bottom:0}
-  /* Remove the per-row bottom border we set globally */
-  table tr td{border-bottom:none}
-
-  /* Each cell becomes a flex row: label on left, value on right */
-  table td{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:4px 0;
-    font-size:11px;
-    border-bottom:1px solid rgba(0,0,0,0.04) !important;
-    color:var(--text2);
-  }
-  table tr td:last-child{border-bottom:none !important}
-
-  /* Label comes from data-label attribute */
-  table td[data-label]::before{
-    content:attr(data-label);
-    font-size:10px;
-    font-weight:600;
-    color:var(--text3);
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-    flex-shrink:0;
-    margin-right:8px;
-  }
-
-  /* Sub-row indent reset on mobile */
-  tr.sub td{padding-left:0}
-  tr.sub td[data-label]::before{padding-left:8px}
-
-  /* Bold rows */
+  /* ── Table layout — horizontal rows, horizontal scroll ── */
+  .card{overflow-x:auto}
+  table{font-size:10px;min-width:340px}
+  th{padding:5px 6px;font-size:9px}
+  td{padding:5px 6px;font-size:10px}
+  tr.sub td{padding-left:12px}
   tr.bold td{font-weight:600;color:var(--text)}
-
-  /* Total row tint */
   tr.bold:last-child{background:rgba(232,70,30,0.06)}
-
-  /* Metric label cell (first td, no data-label) takes full width */
-  table td:first-child{
-    font-weight:500;
-    color:var(--text);
-    border-bottom:none !important;
-    padding-bottom:2px;
-  }
-  table td:first-child::before{display:none}
-
-  /* Total (bold last) row — keep label visible, value on right */
-  tr.bold:last-child td{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    font-weight:700;
-    color:var(--text);
-  }
-  tr.bold:last-child td:first-child{
-    font-weight:700;
-    border-bottom:none !important;
-  }
-  tr.bold:last-child td[data-label]::before{
-    content:attr(data-label);
-    font-size:10px;
-    font-weight:600;
-    color:var(--text3);
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-    flex-shrink:0;
-    margin-right:8px;
-  }
+  tr.bold:last-child td{font-weight:700}
 
   .exrate{font-size:10px}
 
