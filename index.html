@@ -57,7 +57,7 @@ a{color:inherit;text-decoration:none}
 }
 .report-title{font-size:20px;font-weight:600;color:var(--primary);letter-spacing:-0.3px}
 .report-subtitle{font-size:12px;color:var(--text3);margin-top:3px}
-.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.header-right{display:flex;flex-direction:row;align-items:center;gap:12px}
 
 /* ── Currency Toggle ───────────────────────────────────────── */
 .currency-toggle{display:flex;align-items:center;gap:8px;font-size:13px}
@@ -383,25 +383,29 @@ tr:hover td{background:rgba(255,248,245,0.7)}
     margin-top:8px;
     padding-top:8px;
     border-top:1px solid rgba(0,0,0,0.06);
+    width:100%;
   }
   .topbar-bottom .currency-toggle{
-    display:flex;align-items:center;gap:6px;
+    display:flex;align-items:center;justify-content:center;gap:6px;
     background:rgba(255,255,255,0.70);
     border:1px solid rgba(0,0,0,0.08);
     border-radius:8px;
     padding:6px 10px;
     height:36px;
+    flex:1;
   }
   .topbar-bottom .date-control{
-    display:flex;align-items:center;gap:6px;
+    display:flex;align-items:center;justify-content:center;gap:6px;
     background:rgba(255,255,255,0.70);
     border:1px solid rgba(0,0,0,0.08);
     border-radius:8px;
     padding:6px 10px;
     height:36px;
+    flex:1;
   }
   .topbar-bottom .date-control input[type=date]{
     border:none;background:transparent;padding:0;height:auto;font-size:12px;
+    width:100%;
   }
   .topbar-bottom .toggle-label{font-size:12px}
 }
