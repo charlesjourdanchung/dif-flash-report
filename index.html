@@ -289,14 +289,16 @@ tr:hover td{background:rgba(255,248,245,0.7)}
   .card-title{font-size:12px}
 
   /* ── Table layout — horizontal rows, horizontal scroll ── */
-  .card{overflow-x:auto}
-  table{font-size:10px;min-width:340px}
-  th{padding:5px 6px;font-size:9px}
-  td{padding:5px 6px;font-size:10px}
-  tr.sub td{padding-left:12px}
+  .card{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{font-size:9px;min-width:0;width:100%;table-layout:auto}
+  th{padding:4px 4px;font-size:8px;letter-spacing:0;white-space:nowrap}
+  td{padding:4px 4px;font-size:9px;white-space:nowrap}
+  tr.sub td{padding-left:10px}
   tr.bold td{font-weight:600;color:var(--text)}
   tr.bold:last-child{background:rgba(232,70,30,0.06)}
   tr.bold:last-child td{font-weight:700}
+  .card-title{font-size:11px}
+  .card-unit{font-size:9px}
 
   .exrate{font-size:10px}
 
