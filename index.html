@@ -1155,6 +1155,7 @@ function renderDisbArea(mtd, lmtd, lm) {
 
 // ── Loan Tracker ──
 function renderLoanTracker(mtd, lmtd, lm) {
+  const u = currIsUSD;
   // Open ageing
   const openAgeBody = document.getElementById('open-age-body');
   openAgeBody.innerHTML = '';
