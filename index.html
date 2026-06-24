@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIF Flash Report — OTO.com</title>
+<style>
+/* ── CSS Variables ─────────────────────────────────────────── */
+:root{
+  --primary:#E8461E;
+  --accent:#F97316;
+  --bg:#F0F4FD;
+  --surface:rgba(255,255,255,0.68);
+  --border:rgba(255,255,255,0.75);
+  --border2:rgba(0,0,0,0.08);
+  --text:#111827;
+  --text2:#4B5563;
+  --text3:#9CA3AF;
+  --tbl-hdr:rgba(255,255,255,0.50);
+  --tbl-bdr:rgba(0,0,0,0.05);
+  --tbl-bdr2:rgba(0,0,0,0.09);
+  --total-bg:rgba(232,70,30,0.07);
+  --pad:24px;
+  --gap:16px;
+  --rcard:16px;
+  --rctrl:8px;
+}
+
+/* ── Reset & Base ──────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:
+    radial-gradient(ellipse at 15% 10%, #FFE8D6 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 90%, #DDE8FF 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, #F5F0FF 0%, transparent 80%),
+    #F0F4FD;
+  background-attachment:fixed;
+  color:var(--text);
+  font-size:13px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+
+/* ── Topbar ────────────────────────────────────────────────── */
+.topbar{
+  background:rgba(255,255,255,0.72);
+  border-bottom:1px solid var(--border2);
+  border-top:1px solid rgba(255,255,255,0.97);
+  box-shadow:0 8px 32px rgba(99,102,241,0.08),0 2px 8px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.95);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
+  padding:14px var(--pad);
+  display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  position:sticky;top:0;z-index:300;
+}
+.report-title{font-size:20px;font-weight:600;color:var(--primary);letter-spacing:-0.3px}
+.report-subtitle{font-size:12px;color:var(--text3);margin-top:3px}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+
+/* ── Currency Toggle ───────────────────────────────────────── */
+.currency-toggle{display:flex;align-items:center;gap:8px;font-size:13px}
+.toggle-track{
+  width:44px;height:24px;border-radius:12px;background:var(--primary);
+  position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;
+  box-shadow:0 1px 3px rgba(232,70,30,0.3);
+}
+.toggle-track.usd{background:#aaa;box-shadow:none}
+.toggle-thumb{width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15)}
+.toggle-track.usd .toggle-thumb{left:23px}
+.toggle-label{font-weight:600;font-size:13px;color:var(--text)}
+.date-control{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3)}
+.date-control input[type=date]{
+  font-size:12px;padding:4px 8px;
+  border:1px solid var(--border2);border-radius:var(--rctrl);
+  background:rgba(255,255,255,0.80);color:var(--text);cursor:pointer;
+  backdrop-filter:blur(8px);
+}
+.date-control input[type=date]:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(232,70,30,0.10)}
+
+/* ── Tab Nav ───────────────────────────────────────────────── */
+.tab-nav{
+  background:rgba(255,255,255,0.65);
+  border-bottom:1px solid var(--border2);
+  box-shadow:0 4px 16px rgba(99,102,241,0.06),inset 0 1px 0 rgba(255,255,255,0.90);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
+  padding:0 var(--pad);display:flex;gap:0;overflow-x:auto;
+  position:sticky;top:54px;z-index:260;
+}
+.tab-btn{
+  padding:12px 16px;font-size:12px;font-weight:500;
+  border:none;border-bottom:2px solid transparent;background:transparent;
+  color:var(--text3);cursor:pointer;white-space:nowrap;transition:all 0.15s;margin-bottom:-1px;
+}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+
+/* ── Main Content ──────────────────────────────────────────── */
+.main{padding:20px var(--pad);max-width:1100px;margin:0 auto}
+.section{display:none}
+.section.active{display:block}
+.section-title{font-size:16px;font-weight:600;color:var(--primary);text-align:center;margin-bottom:4px}
+.section-sub{font-size:11px;color:var(--text3);text-align:center;margin-bottom:20px}
+
+/* ── KPI Cards ─────────────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-bottom:6px}
+.kpi-card{
+  background:rgba(255,255,255,0.68);
+  border:1px solid var(--border);
+  border-top:1px solid rgba(255,255,255,0.95);
+  box-shadow:0 8px 32px rgba(99,102,241,0.08),0 2px 8px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.95);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border-radius:var(--rcard);padding:14px 16px;
+  transition:transform 0.18s ease,box-shadow 0.18s ease;
+}
+.kpi-card:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 40px rgba(99,102,241,0.13),0 4px 12px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.95);
+}
+.kpi-label{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px}
+.kpi-unit{font-size:10px;color:var(--text3);font-weight:400;margin-left:3px}
+.kpi-bars{display:flex;flex-direction:column;gap:7px}
+.kpi-row{display:flex;align-items:center;gap:8px}
+.kpi-period{font-size:11px;color:var(--text3);width:28px;flex-shrink:0}
+.kpi-bar-wrap{flex:1;height:20px;background:rgba(0,0,0,0.06);border-radius:3px;overflow:hidden}
+.kpi-bar{height:100%;background:var(--primary);border-radius:3px;transition:width 0.4s ease}
+.kpi-bar.lmtd{background:#F5C4B3}
+.kpi-val{font-size:12px;font-weight:600;color:var(--text);width:72px;flex-shrink:0;text-align:right}
+.kpi-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:9999px;width:52px;flex-shrink:0;text-align:center;margin-left:4px}
+.kpi-badge-placeholder{display:inline-block;width:52px;flex-shrink:0;margin-left:4px}
+.kpi-badge.neg{background:#FCEBEB;color:#A32D2D}
+.kpi-badge.pos{background:#EAF3DE;color:#3B6D11}
+.kpi-badge.neu{background:rgba(0,0,0,0.05);color:var(--text3)}
+.placeholder{color:var(--text3)}
+
+/* ── Table Cards ───────────────────────────────────────────── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-bottom:var(--gap)}
+.card{
+  background:rgba(255,255,255,0.65);
+  border:1px solid var(--border);
+  border-top:1px solid rgba(255,255,255,0.92);
+  box-shadow:0 8px 32px rgba(99,102,241,0.08),0 2px 8px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.95);
+  backdrop-filter:blur(16px) saturate(150%);
+  -webkit-backdrop-filter:blur(16px) saturate(150%);
+  border-radius:var(--rcard);padding:16px;overflow-x:auto;
+}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px}
+.card-unit{font-size:10px;color:var(--text3);font-weight:400;margin-left:4px}
+
+/* ── Tables ────────────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{
+  text-align:left;padding:6px 8px;
+  color:var(--text3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;
+  background:var(--tbl-hdr);
+  border-bottom:1px solid var(--tbl-bdr2);
+  white-space:nowrap;
+}
+th.r,td.r{text-align:right}
+td{padding:6px 8px;color:var(--text2);border-bottom:1px solid var(--tbl-bdr)}
+tr:last-child td{border-bottom:none}
+tr.sub td{color:var(--text3);padding-left:20px}
+tr.bold td{font-weight:600;color:var(--text)}
+tr.bold:last-child td{background:var(--total-bg)}
+tr:hover td{background:rgba(255,248,245,0.7)}
+
+/* ── Layout helpers ────────────────────────────────────────── */
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-bottom:var(--gap)}
+.fin-half{max-width:50%}
+.bucket-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-bottom:var(--gap)}
+
+.exrate{font-size:11px;color:var(--text3);text-align:right;margin-top:8px}
+
+/* ── Loading Overlay ───────────────────────────────────────── */
+.loading-overlay{
+  position:fixed;inset:0;
+  background:rgba(240,244,253,0.82);
+  backdrop-filter:blur(32px) saturate(180%);
+  -webkit-backdrop-filter:blur(32px) saturate(180%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:999;gap:14px;
+}
+.loading-overlay.hidden{display:none}
+.spinner{width:36px;height:36px;border:3px solid rgba(0,0,0,0.08);border-top-color:var(--primary);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--text2)}
+.error-box{
+  background:rgba(255,255,255,0.80);
+  border:1px solid rgba(255,255,255,0.75);
+  border-top:1px solid rgba(255,255,255,0.97);
+  box-shadow:0 8px 32px rgba(99,102,241,0.10),0 2px 8px rgba(0,0,0,0.06);
+  backdrop-filter:blur(32px);
+  border-radius:var(--rcard);padding:20px 28px;text-align:center;max-width:380px;
+}
+.error-box h3{color:#A32D2D;margin-bottom:8px;font-size:14px}
+.error-box p{color:var(--text2);font-size:12px;line-height:1.6}
+.error-box button{margin-top:12px;padding:8px 18px;background:var(--primary);color:#fff;border:none;border-radius:var(--rctrl);cursor:pointer;font-size:13px}
+
+/* ── Data status ───────────────────────────────────────────── */
+.data-status{font-size:11px;color:var(--text3);text-align:right;margin-top:4px}
+.data-status.stale{color:#c8860a}
+
+/* ── Topbar bottom row (mobile only) ───────────────────────── */
+.topbar-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.topbar-bottom{display:none}
+
+/* ── Financier merged table (desktop) ──────────────────────── */
+.fin-mobile{display:none}
+.fin-desktop{display:block}
+
+/* Column group tints */
+.fin-merged th.fin-group-csi,
+.fin-merged td.fin-group-csi{background:rgba(99,102,241,0.04);border-left:1px solid rgba(99,102,241,0.10)}
+.fin-merged th.fin-group-fin,
+.fin-merged td.fin-group-fin{background:rgba(232,70,30,0.03);border-left:1px solid rgba(232,70,30,0.10)}
+.fin-merged th.fin-group-tot,
+.fin-merged td.fin-group-tot{background:rgba(0,0,0,0.02);border-left:2px solid rgba(0,0,0,0.08)}
+
+/* Top header row — group labels */
+.fin-hdr-top th{
+  text-align:center;
+  padding:8px 6px 4px;
+  font-size:11px;font-weight:700;
+  letter-spacing:0.06em;
+  border-bottom:none;
+}
+.fin-hdr-top th:first-child{text-align:left;vertical-align:middle}
+.fin-hdr-top th.fin-group-csi{color:#4338ca}
+.fin-hdr-top th.fin-group-fin{color:var(--primary)}
+.fin-hdr-top th.fin-group-tot{color:var(--text2)}
+
+/* Sub-header row — MTD/LMTD/LM labels */
+.fin-hdr-sub th{
+  text-align:right;
+  padding:2px 8px 6px;
+  font-size:10px;font-weight:600;
+  color:var(--text3);
+  border-bottom:1px solid var(--tbl-bdr2);
+}
+
+/* Rowspan cell (Financier label) */
+.fin-merged thead th[rowspan]{
+  vertical-align:middle;
+  padding:8px;
+  border-bottom:1px solid var(--tbl-bdr2);
+  font-size:11px;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.04em;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media(max-width:600px){
+  /* Financier: hide desktop table, show mobile tables */
+  .fin-desktop{display:none}
+  .fin-mobile{display:block}
+  /* Base sizing */
+  body{font-size:12px}
+  .topbar{padding:10px 14px}
+  .main{padding:12px 14px}
+  .report-title{font-size:15px}
+  .report-subtitle{font-size:11px}
+  .header-right{gap:6px}
+  .toggle-label{font-size:12px}
+  .date-control{font-size:11px}
+  .date-control input[type=date]{font-size:11px;padding:3px 6px}
+
+  /* Tab nav */
+  .tab-nav{padding:0 14px;top:48px}
+  .tab-btn{padding:9px 10px;font-size:11px}
+
+  /* KPI grid — single column */
+  .kpi-grid{grid-template-columns:1fr}
+  .kpi-label{font-size:11px}
+  .kpi-val{font-size:11px;width:62px}
+  .kpi-badge{width:46px;font-size:9px}
+  .kpi-badge-placeholder{width:46px}
+  .kpi-period{font-size:10px;width:24px}
+
+  /* Section */
+  .section-title{font-size:14px}
+  .section-sub{font-size:10px}
+
+  /* Cards & grids — single column */
+  .two-col,.fin-grid,.bucket-grid{grid-template-columns:1fr}
+  .fin-half{max-width:100%}
+  .card{padding:12px}
+  .card-title{font-size:12px}
+
+  /* ── Vertical table layout ── */
+  /* Hide thead on mobile */
+  table thead{display:none}
+
+  /* Each row becomes a block card */
+  table tr{
+    display:block;
+    background:rgba(255,255,255,0.45);
+    border:1px solid rgba(255,255,255,0.70);
+    border-radius:10px;
+    margin-bottom:8px;
+    padding:8px 10px;
+  }
+  table tr:last-child{margin-bottom:0}
+  /* Remove the per-row bottom border we set globally */
+  table tr td{border-bottom:none}
+
+  /* Each cell becomes a flex row: label on left, value on right */
+  table td{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:4px 0;
+    font-size:11px;
+    border-bottom:1px solid rgba(0,0,0,0.04) !important;
+    color:var(--text2);
+  }
+  table tr td:last-child{border-bottom:none !important}
+
+  /* Label comes from data-label attribute */
+  table td[data-label]::before{
+    content:attr(data-label);
+    font-size:10px;
+    font-weight:600;
+    color:var(--text3);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    flex-shrink:0;
+    margin-right:8px;
+  }
+
+  /* Sub-row indent reset on mobile */
+  tr.sub td{padding-left:0}
+  tr.sub td[data-label]::before{padding-left:8px}
+
+  /* Bold rows */
+  tr.bold td{font-weight:600;color:var(--text)}
+
+  /* Total row tint */
+  tr.bold:last-child{background:rgba(232,70,30,0.06)}
+
+  /* Metric label cell (first td, no data-label) takes full width */
+  table td:first-child{
+    font-weight:500;
+    color:var(--text);
+    border-bottom:none !important;
+    padding-bottom:2px;
+  }
+  table td:first-child::before{display:none}
+
+  /* Total (bold last) row — keep label visible, value on right */
+  tr.bold:last-child td{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-weight:700;
+    color:var(--text);
+  }
+  tr.bold:last-child td:first-child{
+    font-weight:700;
+    border-bottom:none !important;
+  }
+  tr.bold:last-child td[data-label]::before{
+    content:attr(data-label);
+    font-size:10px;
+    font-weight:600;
+    color:var(--text3);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    flex-shrink:0;
+    margin-right:8px;
+  }
+
+  .exrate{font-size:10px}
+
+  /* ── Mobile topbar ── */
+  .topbar-top .header-right{display:none}
+  .topbar-bottom{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px solid rgba(0,0,0,0.06);
+  }
+  .topbar-bottom .currency-toggle{
+    display:flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,0.70);
+    border:1px solid rgba(0,0,0,0.08);
+    border-radius:8px;
+    padding:6px 10px;
+    height:36px;
+  }
+  .topbar-bottom .date-control{
+    display:flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,0.70);
+    border:1px solid rgba(0,0,0,0.08);
+    border-radius:8px;
+    padding:6px 10px;
+    height:36px;
+  }
+  .topbar-bottom .date-control input[type=date]{
+    border:none;background:transparent;padding:0;height:auto;font-size:12px;
+  }
+  .topbar-bottom .toggle-label{font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Loading data…</div>
+</div>
+
+<div class="topbar">
+  <div class="topbar-top">
+    <div>
+      <div class="report-title">Dealer Inventory Financing Flash Report</div>
+      <div class="report-subtitle">MTD vs LMTD — as of <span id="rpt-date-display">—</span></div>
+    </div>
+    <div class="header-right">
+      <div class="currency-toggle">
+        <span class="toggle-label" id="lbl-idr">IDR</span>
+        <div class="toggle-track" id="curr-toggle" onclick="toggleCurrency()">
+          <div class="toggle-thumb"></div>
+        </div>
+        <span class="toggle-label" id="lbl-usd" style="opacity:0.4">USD</span>
+      </div>
+      <div class="date-control">
+        <label for="rpt-date-input">Report date</label>
+        <input type="date" id="rpt-date-input" onchange="onDateChange(this.value)">
+      </div>
+    </div>
+  </div>
+  <div class="topbar-bottom">
+    <div class="currency-toggle">
+      <span class="toggle-label" id="lbl-idr-m">IDR</span>
+      <div class="toggle-track" id="curr-toggle-m" onclick="toggleCurrency()">
+        <div class="toggle-thumb"></div>
+      </div>
+      <span class="toggle-label" id="lbl-usd-m" style="opacity:0.4">USD</span>
+    </div>
+    <div class="date-control">
+      <label for="rpt-date-input-m">Report date</label>
+      <input type="date" id="rpt-date-input-m" onchange="onDateChange(this.value)">
+    </div>
+  </div>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('summary',this)">Summary</button>
+  <button class="tab-btn" onclick="showTab('txn',this)">Transaction & Dealer Metrics</button>
+  <button class="tab-btn" onclick="showTab('financier',this)">Financier & Lender</button>
+  <button class="tab-btn" onclick="showTab('disbarea',this)">Disbursement by Area</button>
+  <button class="tab-btn" onclick="showTab('loantracker',this)">Loan Tracker</button>
+</div>
+
+<div class="main">
+
+  <!-- SUMMARY -->
+  <div class="section active" id="tab-summary">
+    <div class="section-title">Summary</div>
+    <div class="section-sub">MTD vs LMTD as of <span class="rpt-date-inline">—</span></div>
+    <div class="kpi-grid">
+
+      <div class="kpi-card">
+        <div class="kpi-label">Newly Onboarded Dealers</div>
+        <div class="kpi-bars">
+          <div class="kpi-row">
+            <span class="kpi-period cur-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar" id="bar-onb-mtd" style="width:0%"></div></div>
+            <span class="kpi-val" id="val-onb-mtd">—</span>
+            <span class="kpi-badge neu" id="badge-onb">-</span>
+          </div>
+          <div class="kpi-row">
+            <span class="kpi-period prev-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar lmtd" id="bar-onb-lmtd" style="width:100%"></div></div>
+            <span class="kpi-val" id="val-onb-lmtd">—</span><span class="kpi-badge-placeholder"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label"># Disbursals</div>
+        <div class="kpi-bars">
+          <div class="kpi-row">
+            <span class="kpi-period cur-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar" id="bar-disbn-mtd" style="width:0%"></div></div>
+            <span class="kpi-val" id="val-disbn-mtd">—</span>
+            <span class="kpi-badge neg" id="badge-disbn">—</span>
+          </div>
+          <div class="kpi-row">
+            <span class="kpi-period prev-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar lmtd" id="bar-disbn-lmtd" style="width:100%"></div></div>
+            <span class="kpi-val" id="val-disbn-lmtd">—</span><span class="kpi-badge-placeholder"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Disbursed Amount <span class="kpi-unit" id="kpi-disbamt-unit">(IDR Mio)</span></div>
+        <div class="kpi-bars">
+          <div class="kpi-row">
+            <span class="kpi-period cur-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar" id="bar-disbsum-mtd" style="width:0%"></div></div>
+            <span class="kpi-val" id="val-disbsum-mtd">—</span>
+            <span class="kpi-badge neg" id="badge-disbsum">—</span>
+          </div>
+          <div class="kpi-row">
+            <span class="kpi-period prev-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar lmtd" id="bar-disbsum-lmtd" style="width:100%"></div></div>
+            <span class="kpi-val" id="val-disbsum-lmtd">—</span><span class="kpi-badge-placeholder"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">AUM <span class="kpi-unit" id="kpi-aum-unit">(IDR Mio)</span></div>
+        <div class="kpi-bars">
+          <div class="kpi-row">
+            <span class="kpi-period cur-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar" id="bar-aum-mtd" style="width:0%"></div></div>
+            <span class="kpi-val" id="val-aum-mtd">—</span>
+            <span class="kpi-badge neg" id="badge-aum">—</span>
+          </div>
+          <div class="kpi-row">
+            <span class="kpi-period prev-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar lmtd" id="bar-aum-lmtd" style="width:100%"></div></div>
+            <span class="kpi-val" id="val-aum-lmtd">—</span><span class="kpi-badge-placeholder"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Avg. Disbursed Value <span class="kpi-unit" id="kpi-avg-unit">(IDR Mio)</span></div>
+        <div class="kpi-bars">
+          <div class="kpi-row">
+            <span class="kpi-period cur-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar" id="bar-avg-mtd" style="width:0%"></div></div>
+            <span class="kpi-val" id="val-avg-mtd">—</span>
+            <span class="kpi-badge pos" id="badge-avg">—</span>
+          </div>
+          <div class="kpi-row">
+            <span class="kpi-period prev-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar lmtd" id="bar-avg-lmtd" style="width:100%"></div></div>
+            <span class="kpi-val" id="val-avg-lmtd">—</span><span class="kpi-badge-placeholder"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Active Dealers</div>
+        <div class="kpi-bars">
+          <div class="kpi-row">
+            <span class="kpi-period cur-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar" id="bar-act-mtd" style="width:0%"></div></div>
+            <span class="kpi-val" id="val-act-mtd">—</span>
+            <span class="kpi-badge neg" id="badge-act">—</span>
+          </div>
+          <div class="kpi-row">
+            <span class="kpi-period prev-mon">—</span>
+            <div class="kpi-bar-wrap"><div class="kpi-bar lmtd" id="bar-act-lmtd" style="width:100%"></div></div>
+            <span class="kpi-val" id="val-act-lmtd">—</span><span class="kpi-badge-placeholder"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="exrate" id="exrate-summary">Exchange rate: $1 = IDR 17,000</div>
+    <div class="data-status" id="data-status-summary"></div>
+  </div>
+
+  <!-- TXN & DEALER -->
+  <div class="section" id="tab-txn">
+    <div class="section-title">Transaction & Dealer Metrics</div>
+    <div class="section-sub">MTD vs LMTD as of <span class="rpt-date-inline">—</span></div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Transaction Metrics</div>
+        <table>
+          <thead><tr><th>Metric</th><th class="r">MTD</th><th class="r">LMTD</th><th class="r">LM</th></tr></thead>
+          <tbody>
+            <tr class="bold"><td>Number of Disbursements</td><td class="r" id="txn-disbn-mtd" data-label="MTD">—</td><td class="r" id="txn-disbn-lmtd" data-label="LMTD">—</td><td class="r" id="txn-disbn-lm" data-label="LM">—</td></tr>
+            <tr class="bold"><td>DIF AUM <span class="card-unit txn-unit">(IDR Mio)</span></td><td class="r" id="txn-aum-mtd" data-label="MTD">—</td><td class="r" id="txn-aum-lmtd" data-label="LMTD">—</td><td class="r" id="txn-aum-lm" data-label="LM">—</td></tr>
+            <tr class="sub"><td>Modalku</td><td class="r" id="txn-mk-mtd" data-label="MTD">—</td><td class="r" id="txn-mk-lmtd" data-label="LMTD">—</td><td class="r" id="txn-mk-lm" data-label="LM">—</td></tr>
+            <tr class="sub"><td>Akseleran</td><td class="r" id="txn-ak-mtd" data-label="MTD">—</td><td class="r" id="txn-ak-lmtd" data-label="LMTD">—</td><td class="r" id="txn-ak-lm" data-label="LM">—</td></tr>
+            <tr class="sub"><td>BSS</td><td class="r" id="txn-bss-mtd" data-label="MTD">—</td><td class="r" id="txn-bss-lmtd" data-label="LMTD">—</td><td class="r" id="txn-bss-lm" data-label="LM">—</td></tr>
+            <tr class="sub"><td>Danabijak</td><td class="r" id="txn-db-mtd" data-label="MTD">—</td><td class="r" id="txn-db-lmtd" data-label="LMTD">—</td><td class="r" id="txn-db-lm" data-label="LM">—</td></tr>
+            <tr class="bold"><td>Total AUM <span class="card-unit txn-unit">(IDR Mio)</span></td><td class="r" id="txn-totaum-mtd" data-label="MTD">—</td><td class="r" id="txn-totaum-lmtd" data-label="LMTD">—</td><td class="r" id="txn-totaum-lm" data-label="LM">—</td></tr>
+            <tr><td>Repossession AUM <span class="card-unit txn-unit">(IDR Mio)</span></td><td class="r" id="txn-repo-mtd" data-label="MTD">—</td><td class="r" id="txn-repo-lmtd" data-label="LMTD">—</td><td class="r" id="txn-repo-lm" data-label="LM">—</td></tr>
+            <tr><td>Net Repossession AUM <span class="card-unit txn-unit">(IDR Mio)</span></td><td class="r" id="txn-netrepo-mtd" data-label="MTD">—</td><td class="r" id="txn-netrepo-lmtd" data-label="LMTD">—</td><td class="r" id="txn-netrepo-lm" data-label="LM">—</td></tr>
+            <tr><td>Disbursed Amount <span class="card-unit txn-unit">(IDR Mio)</span></td><td class="r" id="txn-disbsum-mtd" data-label="MTD">—</td><td class="r" id="txn-disbsum-lmtd" data-label="LMTD">—</td><td class="r" id="txn-disbsum-lm" data-label="LM">—</td></tr>
+            <tr><td>Number of Loans Repaid</td><td class="r" id="txn-closedn-mtd" data-label="MTD">—</td><td class="r" id="txn-closedn-lmtd" data-label="LMTD">—</td><td class="r" id="txn-closedn-lm" data-label="LM">—</td></tr>
+            <tr><td>Amount of Loans Repaid <span class="card-unit txn-unit">(IDR Mio)</span></td><td class="r" id="txn-repaid-mtd" data-label="MTD">—</td><td class="r" id="txn-repaid-lmtd" data-label="LMTD">—</td><td class="r" id="txn-repaid-lm" data-label="LM">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">Dealer Metrics</div>
+        <table>
+          <thead><tr><th>Metric</th><th class="r">MTD</th><th class="r">LM</th></tr></thead>
+          <tbody>
+            <tr><td>Active Dealers (Fresh Disb.)</td><td class="r" id="dm-act-mtd" data-label="MTD">—</td><td class="r" id="dm-act-lm" data-label="LM">—</td></tr>
+            <tr><td>Fresh Disb. / Active Dealers</td><td class="r" id="dm-ratio-mtd" data-label="MTD">—</td><td class="r" id="dm-ratio-lm" data-label="LM">—</td></tr>
+            <tr><td>Total Onboarded Dealers</td><td class="r" id="dm-tot-mtd" data-label="MTD">—</td><td class="r" id="dm-tot-lm" data-label="LM">—</td></tr>
+            <tr><td>Newly Onboarded Dealers</td><td class="r" id="dm-new-mtd" data-label="MTD">—</td><td class="r" id="dm-new-lm" data-label="LM">—</td></tr>
+            <tr><td>Drawing Power <span class="card-unit txn-unit">(IDR Mio)</span></td><td class="r" id="dm-dp-mtd" data-label="MTD">—</td><td class="r" id="dm-dp-lm" data-label="LM">—</td></tr>
+            <tr><td>Sanction Limit <span class="card-unit txn-unit">(IDR Mio)</span></td><td class="r" id="dm-sl-mtd" data-label="MTD">—</td><td class="r" id="dm-sl-lm" data-label="LM">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="exrate">Exchange rate: $1 = IDR 17,000</div>
+  </div>
+
+  <!-- FINANCIER -->
+  <div class="section" id="tab-financier">
+    <div class="section-title">Financier & Lender Portfolio</div>
+    <div class="section-sub">MTD vs LMTD as of <span class="rpt-date-inline">—</span></div>
+
+    <!-- DESKTOP: merged table (hidden on mobile) -->
+    <div class="card fin-desktop">
+      <div class="card-title">Financier Portfolio <span class="card-unit fin-unit">(IDR Mio)</span></div>
+      <table class="fin-merged">
+        <thead>
+          <tr class="fin-hdr-top">
+            <th rowspan="2">Financier</th>
+            <th colspan="3" class="r fin-group-csi">CSI</th>
+            <th colspan="3" class="r fin-group-fin">Finsso</th>
+            <th colspan="3" class="r fin-group-tot">Total</th>
+          </tr>
+          <tr class="fin-hdr-sub">
+            <th class="r fin-group-csi">MTD</th><th class="r fin-group-csi">LMTD</th><th class="r fin-group-csi">LM</th>
+            <th class="r fin-group-fin">MTD</th><th class="r fin-group-fin">LMTD</th><th class="r fin-group-fin">LM</th>
+            <th class="r fin-group-tot">MTD</th><th class="r fin-group-tot">LMTD</th><th class="r fin-group-tot">LM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Akseleran</td>
+            <td class="r fin-group-csi" id="fin-mtd-ak-csi">—</td><td class="r fin-group-csi" id="fin-lmtd-ak-csi">—</td><td class="r fin-group-csi" id="fin-lm-ak-csi">—</td>
+            <td class="r fin-group-fin" id="fin-mtd-ak-fin">—</td><td class="r fin-group-fin" id="fin-lmtd-ak-fin">—</td><td class="r fin-group-fin" id="fin-lm-ak-fin">—</td>
+            <td class="r fin-group-tot" id="fin-mtd-ak-tot">—</td><td class="r fin-group-tot" id="fin-lmtd-ak-tot">—</td><td class="r fin-group-tot" id="fin-lm-ak-tot">—</td>
+          </tr>
+          <tr>
+            <td>Modalku</td>
+            <td class="r fin-group-csi" id="fin-mtd-mk-csi">—</td><td class="r fin-group-csi" id="fin-lmtd-mk-csi">—</td><td class="r fin-group-csi" id="fin-lm-mk-csi">—</td>
+            <td class="r fin-group-fin" id="fin-mtd-mk-fin">—</td><td class="r fin-group-fin" id="fin-lmtd-mk-fin">—</td><td class="r fin-group-fin" id="fin-lm-mk-fin">—</td>
+            <td class="r fin-group-tot" id="fin-mtd-mk-tot">—</td><td class="r fin-group-tot" id="fin-lmtd-mk-tot">—</td><td class="r fin-group-tot" id="fin-lm-mk-tot">—</td>
+          </tr>
+          <tr>
+            <td>BSS</td>
+            <td class="r fin-group-csi" id="fin-mtd-bss-csi">—</td><td class="r fin-group-csi" id="fin-lmtd-bss-csi">—</td><td class="r fin-group-csi" id="fin-lm-bss-csi">—</td>
+            <td class="r fin-group-fin" id="fin-mtd-bss-fin">—</td><td class="r fin-group-fin" id="fin-lmtd-bss-fin">—</td><td class="r fin-group-fin" id="fin-lm-bss-fin">—</td>
+            <td class="r fin-group-tot" id="fin-mtd-bss-tot">—</td><td class="r fin-group-tot" id="fin-lmtd-bss-tot">—</td><td class="r fin-group-tot" id="fin-lm-bss-tot">—</td>
+          </tr>
+          <tr>
+            <td>Danabijak</td>
+            <td class="r fin-group-csi" id="fin-mtd-db-csi">—</td><td class="r fin-group-csi" id="fin-lmtd-db-csi">—</td><td class="r fin-group-csi" id="fin-lm-db-csi">—</td>
+            <td class="r fin-group-fin" id="fin-mtd-db-fin">—</td><td class="r fin-group-fin" id="fin-lmtd-db-fin">—</td><td class="r fin-group-fin" id="fin-lm-db-fin">—</td>
+            <td class="r fin-group-tot" id="fin-mtd-db-tot">—</td><td class="r fin-group-tot" id="fin-lmtd-db-tot">—</td><td class="r fin-group-tot" id="fin-lm-db-tot">—</td>
+          </tr>
+          <tr class="bold">
+            <td>Total</td>
+            <td class="r fin-group-csi" id="fin-mtd-tot-csi">—</td><td class="r fin-group-csi" id="fin-lmtd-tot-csi">—</td><td class="r fin-group-csi" id="fin-lm-tot-csi">—</td>
+            <td class="r fin-group-fin" id="fin-mtd-tot-fin">—</td><td class="r fin-group-fin" id="fin-lmtd-tot-fin">—</td><td class="r fin-group-fin" id="fin-lm-tot-fin">—</td>
+            <td class="r fin-group-tot" id="fin-mtd-tot-tot">—</td><td class="r fin-group-tot" id="fin-lmtd-tot-tot">—</td><td class="r fin-group-tot" id="fin-lm-tot-tot">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- MOBILE: 3 separate tables (hidden on desktop) -->
+    <div class="fin-mobile">
+      <div class="fin-grid">
+        <div class="card">
+          <div class="card-title">MTD <span class="card-unit fin-unit">(IDR Mio)</span></div>
+          <table>
+            <thead><tr><th>Financier</th><th class="r">CSI</th><th class="r">Finsso</th><th class="r">Total</th></tr></thead>
+            <tbody>
+              <tr><td>Akseleran</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr><td>Modalku</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr><td>BSS</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr><td>Danabijak</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr class="bold"><td>Total</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title">LMTD <span class="card-unit fin-unit">(IDR Mio)</span></div>
+          <table>
+            <thead><tr><th>Financier</th><th class="r">CSI</th><th class="r">Finsso</th><th class="r">Total</th></tr></thead>
+            <tbody>
+              <tr><td>Akseleran</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr><td>Modalku</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr><td>BSS</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr><td>Danabijak</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr class="bold"><td>Total</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="fin-grid">
+        <div class="card">
+          <div class="card-title">LM <span class="card-unit fin-unit">(IDR Mio)</span></div>
+          <table>
+            <thead><tr><th>Financier</th><th class="r">CSI</th><th class="r">Finsso</th><th class="r">Total</th></tr></thead>
+            <tbody>
+              <tr><td>Akseleran</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr><td>Modalku</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr><td>BSS</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr><td>Danabijak</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+              <tr class="bold"><td>Total</td><td class="r" data-label="CSI">—</td><td class="r" data-label="Finsso">—</td><td class="r" data-label="Total">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="exrate">Exchange rate: $1 = IDR 17,000</div>
+  </div>
+
+  <!-- DISBURSEMENT BY AREA -->
+  <div class="section" id="tab-disbarea">
+    <div class="section-title">Disbursement by Area</div>
+    <div class="section-sub">MTD vs LMTD as of <span class="rpt-date-inline">—</span></div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"># of Loans by Area</div>
+        <table>
+          <thead><tr><th>Hub Area</th><th class="r">MTD</th><th class="r">%</th><th class="r">LMTD</th><th class="r">%</th><th class="r">LM</th><th class="r">%</th></tr></thead>
+          <tbody id="area-loans-body"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">GMV by Area <span class="card-unit gmv-unit">(IDR Mio)</span></div>
+        <table>
+          <thead><tr><th>Hub Area</th><th class="r">MTD</th><th class="r">%</th><th class="r">LMTD</th><th class="r">%</th><th class="r">LM</th><th class="r">%</th></tr></thead>
+          <tbody id="area-gmv-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="exrate">Exchange rate: $1 = IDR 17,000</div>
+  </div>
+
+  <!-- LOAN TRACKER -->
+  <div class="section" id="tab-loantracker">
+    <div class="section-title">Loan Tracker</div>
+    <div class="section-sub">MTD vs LMTD as of <span class="rpt-date-inline">—</span></div>
+    <div class="bucket-grid">
+      <div class="card">
+        <div class="card-title">Open Loans — by Ageing Bucket</div>
+        <table>
+          <thead><tr><th>Bucket</th><th class="r"># Loans</th><th class="r">%</th><th class="r">AUM <span class="card-unit">(IDR Mio)</span></th><th class="r">%</th></tr></thead>
+          <tbody id="open-age-body"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">Closed Loans — by Tenure Bucket</div>
+        <table>
+          <thead><tr><th>Bucket</th><th class="r">MTD #</th><th class="r">%</th><th class="r">LMTD #</th><th class="r">%</th><th class="r">LM #</th><th class="r">%</th></tr></thead>
+          <tbody id="closed-age-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="bucket-grid">
+      <div class="card">
+        <div class="card-title">Open Loans — by Ticket Size</div>
+        <table>
+          <thead><tr><th>Bucket</th><th class="r"># Loans</th><th class="r">%</th><th class="r">AUM <span class="card-unit">(IDR Mio)</span></th><th class="r">%</th></tr></thead>
+          <tbody id="open-ticket-body"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">Closed Loans — by Ticket Size</div>
+        <table>
+          <thead><tr><th>Bucket</th><th class="r">MTD #</th><th class="r">%</th><th class="r">LMTD #</th><th class="r">%</th><th class="r">LM #</th><th class="r">%</th></tr></thead>
+          <tbody id="closed-ticket-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="exrate">Exchange rate: $1 = IDR 17,000</div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const DATA_URL = 'data.json';
+const FX = 17000;
+
+// ─── COLUMN INDICES (0-based) ─────────────────────────────────────────────────
+const C = {
+  DATE: 0,
+  ONBOARD_NEW: 1,       // B - Newly Onboarded (MTD cumulative)
+  ONBOARD_ANCHOR: 2,    // C - Total Onboarded (inception anchor)
+  OPEN_N: 3,            // D - Open # loans
+  AUM: 4,               // E - Open SUM AUM (daily snapshot)
+  MK_AUM: 6,            // G
+  AK_AUM: 7,            // H
+  BSS_AUM: 8,           // I
+  DB_AUM: 9,            // J
+  MK_CSI: 11,           // L
+  AK_CSI: 12,           // M
+  BSS_CSI: 13,          // N
+  DB_CSI: 14,           // O
+  MK_FIN: 15,           // P
+  AK_FIN: 16,           // Q
+  BSS_FIN: 17,          // R
+  DB_FIN: 18,           // S
+  REPO_AUM: 20,         // U
+  NET_REPO_AUM: 21,     // V
+  DISB_N: 23,           // X
+  DISB_SUM: 24,         // Y
+  DISB_AVG: 25,         // Z
+  CLOSED_N: 29,         // AD
+  REPAID_SUM: 30,       // AE
+  ACTIVE_DEALERS: 34,   // AI
+  FRESH_RATIO: 35,      // AJ
+  TOTAL_ONBOARD: 36,    // AK
+  NEWLY_ONBOARD: 37,    // AL
+  DRAWING_POWER: 38,    // AM
+  SANCTION_LIMIT: 39,   // AN
+  // Open ageing # (AP-AZ = 41-51)
+  OPEN_AGE_N: 41,
+  // Open ticket # (BA-BF = 52-57)
+  OPEN_TICK_N: 52,
+  // Open ageing SUM (BH-BR = 59-69)
+  OPEN_AGE_SUM: 59,
+  // Open ticket SUM (BS-BX = 70-75)
+  OPEN_TICK_SUM: 70,
+  // Closed ageing # (BZ-CJ = 77-87)
+  CLOSED_AGE_N: 77,
+  // Closed ticket # (CK-CP = 88-93)
+  CLOSED_TICK_N: 88,
+  // Disbursed # hub (CR-DB = 95-105)
+  HUB_N: 95,
+  // Disbursed SUM hub (DD-DN = 107-117)
+  HUB_SUM: 107,
+};
+
+const HUBS = ['Jabodetabek','Surabaya','Bandung','Bali','Yogyakarta','Semarang','Palembang','Medan','Pekanbaru','Batam','Makassar'];
+const AGE_BUCKETS = ['1–7 Days','8–15 Days','16–30 Days','31–45 Days','46–60 Days','61–90 Days','91–120 Days','121–150 Days','150–180 Days','180–360 Days','>360 Days'];
+const TICK_BUCKETS = ['<25 Mio IDR','25–50 Mio IDR','50–75 Mio IDR','75–100 Mio IDR','100–150 Mio IDR','>150 Mio IDR'];
+
+// ─── STATE ─────────────────────────────────────────────────────────────────────
+let dateMap = {};       // 'YYYY-MM-DD' -> row array
+let currIsUSD = false;
+let selectedDate = null;
+let dataLoadedAt = null;
+
+// ─── DATE UTILS ───────────────────────────────────────────────────────────────
+function parseSheetDate(s) {
+  // "24 Jun 2026" or "24-Jun-2026"
+  const clean = s.trim().replace(/-/g,' ');
+  const months = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const parts = clean.split(' ');
+  if (parts.length !== 3) return null;
+  const m = months[parts[1]];
+  if (m === undefined) return null;
+  return new Date(+parts[2], m, +parts[0]);
+}
+
+function toKey(d) {
+  // local date to YYYY-MM-DD key
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function dateFromKey(k) {
+  const [y,m,d] = k.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+
+function lmtdDate(d) {
+  const pm = d.getMonth() === 0 ? 11 : d.getMonth() - 1;
+  const py = d.getMonth() === 0 ? d.getFullYear() - 1 : d.getFullYear();
+  const maxDay = new Date(py, pm+1, 0).getDate();
+  return new Date(py, pm, Math.min(d.getDate(), maxDay));
+}
+
+function lmDate(d) {
+  // last day of prior month
+  return new Date(d.getFullYear(), d.getMonth(), 0);
+}
+
+function toDateStr(d) {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function toShortMon(d) {
+  return d.toLocaleString('en-GB', {month:'short'});
+}
+
+// ─── NUMBER UTILS ─────────────────────────────────────────────────────────────
+function parseNum(v) {
+  if (v === null || v === undefined) return 0;
+  const s = String(v).replace(/,/g,'').trim();
+  return parseFloat(s) || 0;
+}
+
+function fmtNum(v, decimals=0) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return v.toLocaleString('en-US', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
+}
+
+function fmtPct(v) {
+  if (!isFinite(v)) return '—';
+  return (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+}
+
+function badge(mtd, lmtd) {
+  if (!lmtd || lmtd === 0) return {cls:'neu', txt:'—'};
+  const pct = ((mtd - lmtd) / Math.abs(lmtd)) * 100;
+  const cls = pct > 0 ? 'pos' : pct < 0 ? 'neg' : 'neu';
+  return {cls, txt: fmtPct(pct)};
+}
+
+function getRow(d) {
+  if (!d) return null;
+  // Try exact date
+  let row = dateMap[toKey(d)];
+  if (row) return row;
+  // Try up to 3 days back (weekends/holidays)
+  for (let i = 1; i <= 3; i++) {
+    const prev = new Date(d);
+    prev.setDate(prev.getDate() - i);
+    row = dateMap[toKey(prev)];
+    if (row && row[C.DISB_N]) return row;
+  }
+  return null;
+}
+
+function v(row, idx) {
+  if (!row) return 0;
+  return parseNum(row[idx]);
+}
+
+function fv(row, idx, usd=false) {
+  const n = v(row, idx);
+  if (usd) return fmtNum(n / FX, 2);
+  return fmtNum(n);
+}
+
+// ─── CSV PARSING ──────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQ) {
+      if (ch === '"' && text[i+1] === '"') { field += '"'; i++; }
+      else if (ch === '"') inQ = false;
+      else field += ch;
+    } else {
+      if (ch === '"') inQ = true;
+      else if (ch === ',') { row.push(field); field = ''; }
+      else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (ch === '\r') {}
+      else field += ch;
+    }
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+// ─── DATA LOAD ────────────────────────────────────────────────────────────────
+async function loadData() {
+  showLoading('Loading data…');
+  try {
+    const res = await fetch(DATA_URL + '?t=' + Date.now()); // cache-bust
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+
+    if (!json.rows || json.rows.length === 0) {
+      throw new Error('Data not yet available. The scheduled refresh may not have run yet.');
+    }
+
+    dateMap = {};
+    for (const row of json.rows) {
+      if (!row[0] || !row[0].trim()) continue;
+      const d = parseSheetDate(row[0]);
+      if (!d || isNaN(d.getTime())) continue;
+      dateMap[toKey(d)] = row;
+    }
+
+    dataLoadedAt = json.fetched_at ? new Date(json.fetched_at) : new Date();
+    hideLoading();
+    return true;
+  } catch (err) {
+    showError(err.message);
+    return false;
+  }
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function renderAll(selDate) {
+  const mtdRow  = getRow(selDate);
+  const lmtdRow = getRow(lmtdDate(selDate));
+  const lmRow   = getRow(lmDate(selDate));
+
+  renderSummary(mtdRow, lmtdRow);
+  renderTxn(mtdRow, lmtdRow, lmRow);
+  renderFinancier(mtdRow, lmtdRow, lmRow);
+  renderDisbArea(mtdRow, lmtdRow, lmRow);
+  renderLoanTracker(mtdRow, lmtdRow, lmRow);
+  updateDataStatus(mtdRow);
+}
+
+// ── Summary ──
+function renderSummary(mtd, lmtd) {
+  const items = [
+    { id:'onb',   mtdIdx: C.ONBOARD_NEW,    lmtdIdx: C.ONBOARD_NEW,    fmt: v => fmtNum(v) },
+    { id:'disbn', mtdIdx: C.DISB_N,         lmtdIdx: C.DISB_N,         fmt: v => fmtNum(v) },
+    { id:'disbsum', mtdIdx: C.DISB_SUM,     lmtdIdx: C.DISB_SUM,       fmt: v => currIsUSD ? fmtNum(v/FX,2) : fmtNum(v) },
+    { id:'aum',   mtdIdx: C.AUM,            lmtdIdx: C.AUM,            fmt: v => currIsUSD ? fmtNum(v/FX,2) : fmtNum(v) },
+    { id:'avg',   mtdIdx: C.DISB_AVG,       lmtdIdx: C.DISB_AVG,       fmt: v => currIsUSD ? fmtNum((v/FX)*1000,2) : fmtNum(v) },
+    { id:'act',   mtdIdx: C.ACTIVE_DEALERS, lmtdIdx: C.ACTIVE_DEALERS, fmt: v => fmtNum(v) },
+  ];
+
+  items.forEach(({id, mtdIdx, lmtdIdx, fmt}) => {
+    const mv = v(mtd, mtdIdx);
+    const lv = v(lmtd, lmtdIdx);
+    const b  = badge(mv, lv);
+    set(`val-${id}-mtd`, fmt(mv));
+    set(`val-${id}-lmtd`, fmt(lv));
+    const badgeEl = document.getElementById(`badge-${id}`);
+    if (badgeEl) { badgeEl.textContent = b.txt; badgeEl.className = `kpi-badge ${b.cls}`; }
+    // Bars: scale relative to max of the two
+    const max = Math.max(mv, lv, 1);
+    setBar(`bar-${id}-mtd`,  (mv / max) * 100);
+    setBar(`bar-${id}-lmtd`, (lv / max) * 100);
+  });
+}
+
+// ── Transaction & Dealer ──
+function renderTxn(mtd, lmtd, lm) {
+  const u = currIsUSD;
+  const n = (row, idx) => u ? fmtNum(v(row,idx)/FX,2) : fmtNum(v(row,idx));
+  const raw = (row, idx) => fmtNum(v(row,idx));
+
+  // Transaction metrics
+  set('txn-disbn-mtd', raw(mtd, C.DISB_N));
+  set('txn-disbn-lmtd', raw(lmtd, C.DISB_N));
+  set('txn-disbn-lm', raw(lm, C.DISB_N));
+
+  // DIF AUM (total = E col)
+  set('txn-aum-mtd', n(mtd, C.AUM));
+  set('txn-aum-lmtd', n(lmtd, C.AUM));
+  set('txn-aum-lm', n(lm, C.AUM));
+
+  // Lender AUM breakdown
+  [['mk',C.MK_AUM],['ak',C.AK_AUM],['bss',C.BSS_AUM],['db',C.DB_AUM]].forEach(([id,idx]) => {
+    set(`txn-${id}-mtd`, n(mtd, idx));
+    set(`txn-${id}-lmtd`, n(lmtd, idx));
+    set(`txn-${id}-lm`, n(lm, idx));
+  });
+
+  // Total AUM (same as E)
+  set('txn-totaum-mtd', n(mtd, C.AUM));
+  set('txn-totaum-lmtd', n(lmtd, C.AUM));
+  set('txn-totaum-lm', n(lm, C.AUM));
+
+  set('txn-repo-mtd', n(mtd, C.REPO_AUM));
+  set('txn-repo-lmtd', n(lmtd, C.REPO_AUM));
+  set('txn-repo-lm', n(lm, C.REPO_AUM));
+
+  set('txn-netrepo-mtd', n(mtd, C.NET_REPO_AUM));
+  set('txn-netrepo-lmtd', n(lmtd, C.NET_REPO_AUM));
+  set('txn-netrepo-lm', n(lm, C.NET_REPO_AUM));
+
+  set('txn-disbsum-mtd', n(mtd, C.DISB_SUM));
+  set('txn-disbsum-lmtd', n(lmtd, C.DISB_SUM));
+  set('txn-disbsum-lm', n(lm, C.DISB_SUM));
+
+  set('txn-closedn-mtd', raw(mtd, C.CLOSED_N));
+  set('txn-closedn-lmtd', raw(lmtd, C.CLOSED_N));
+  set('txn-closedn-lm', raw(lm, C.CLOSED_N));
+
+  set('txn-repaid-mtd', n(mtd, C.REPAID_SUM));
+  set('txn-repaid-lmtd', n(lmtd, C.REPAID_SUM));
+  set('txn-repaid-lm', n(lm, C.REPAID_SUM));
+
+  // Dealer metrics
+  set('dm-act-mtd', raw(mtd, C.ACTIVE_DEALERS));
+  set('dm-act-lm', raw(lm, C.ACTIVE_DEALERS));
+  set('dm-ratio-mtd', fmtNum(v(mtd, C.FRESH_RATIO), 1));
+  set('dm-ratio-lm', fmtNum(v(lm, C.FRESH_RATIO), 1));
+  set('dm-tot-mtd', raw(mtd, C.TOTAL_ONBOARD));
+  set('dm-tot-lm', raw(lm, C.TOTAL_ONBOARD));
+  set('dm-new-mtd', raw(mtd, C.ONBOARD_NEW));
+  set('dm-new-lm', raw(lm, C.ONBOARD_NEW));
+  set('dm-dp-mtd', n(mtd, C.DRAWING_POWER));
+  set('dm-dp-lm', n(lm, C.DRAWING_POWER));
+  set('dm-sl-mtd', n(mtd, C.SANCTION_LIMIT));
+  set('dm-sl-lm', n(lm, C.SANCTION_LIMIT));
+}
+
+// ── Financier ──
+function renderFinancier(mtd, lmtd, lm) {
+  const u = currIsUSD;
+  const fmt = (row, idx) => u ? fmtNum(v(row,idx)/FX,2) : fmtNum(v(row,idx));
+
+  // Lender order: Akseleran, Modalku, BSS, Danabijak
+  const lenders = [
+    {id:'ak',  csi: C.AK_CSI,  fin: C.AK_FIN},
+    {id:'mk',  csi: C.MK_CSI,  fin: C.MK_FIN},
+    {id:'bss', csi: C.BSS_CSI, fin: C.BSS_FIN},
+    {id:'db',  csi: C.DB_CSI,  fin: C.DB_FIN},
+  ];
+
+  ['mtd','lmtd','lm'].forEach(period => {
+    const row = period === 'mtd' ? mtd : period === 'lmtd' ? lmtd : lm;
+    let totCSI = 0, totFin = 0;
+    lenders.forEach(({id, csi, fin}) => {
+      const cv = v(row, csi), fv2 = v(row, fin);
+      totCSI += cv; totFin += fv2;
+      set(`fin-${period}-${id}-csi`, u ? fmtNum(cv/FX,2) : fmtNum(cv));
+      set(`fin-${period}-${id}-fin`, u ? fmtNum(fv2/FX,2) : fmtNum(fv2));
+      set(`fin-${period}-${id}-tot`, u ? fmtNum((cv+fv2)/FX,2) : fmtNum(cv+fv2));
+    });
+    set(`fin-${period}-tot-csi`, u ? fmtNum(totCSI/FX,2) : fmtNum(totCSI));
+    set(`fin-${period}-tot-fin`, u ? fmtNum(totFin/FX,2) : fmtNum(totFin));
+    set(`fin-${period}-tot-tot`, u ? fmtNum((totCSI+totFin)/FX,2) : fmtNum(totCSI+totFin));
+  });
+
+  // Sync mobile tables from desktop cell values
+  // Mobile tables: [0]=MTD, [1]=LMTD, [2]=LM; rows: ak,mk,bss,db,tot
+  const mobileTbodies = document.querySelectorAll('.fin-mobile table tbody');
+  const periods = ['mtd','lmtd','lm'];
+  const lenderIds = ['ak','mk','bss','db','tot'];
+  mobileTbodies.forEach((tbody, ti) => {
+    const period = periods[ti];
+    tbody.querySelectorAll('tr').forEach((tr, ri) => {
+      const lid = lenderIds[ri];
+      const cells = tr.querySelectorAll('td');
+      if (cells.length >= 4) {
+        cells[1].textContent = document.getElementById(`fin-${period}-${lid}-csi`)?.textContent || '—';
+        cells[2].textContent = document.getElementById(`fin-${period}-${lid}-fin`)?.textContent || '—';
+        cells[3].textContent = document.getElementById(`fin-${period}-${lid}-tot`)?.textContent || '—';
+      }
+    });
+  });
+}
+
+// ── Disbursement by Area ──
+function renderDisbArea(mtd, lmtd, lm) {
+  const u = currIsUSD;
+
+  // Loans table
+  const loansBody = document.getElementById('area-loans-body');
+  const gmvBody   = document.getElementById('area-gmv-body');
+  loansBody.innerHTML = '';
+  gmvBody.innerHTML = '';
+
+  // Totals
+  let lnTotMtd=0, lnTotLmtd=0, lnTotLm=0;
+  let gmvTotMtd=0, gmvTotLmtd=0, gmvTotLm=0;
+  const lnMtdArr=[], lnLmtdArr=[], lnLmArr=[];
+  const gmvMtdArr=[], gmvLmtdArr=[], gmvLmArr=[];
+
+  HUBS.forEach((hub, i) => {
+    const lnM  = v(mtd,  C.HUB_N+i);
+    const lnLt = v(lmtd, C.HUB_N+i);
+    const lnL  = v(lm,   C.HUB_N+i);
+    lnMtdArr.push(lnM); lnLmtdArr.push(lnLt); lnLmArr.push(lnL);
+    lnTotMtd += lnM; lnTotLmtd += lnLt; lnTotLm += lnL;
+
+    const gmM  = v(mtd,  C.HUB_SUM+i);
+    const gmLt = v(lmtd, C.HUB_SUM+i);
+    const gmL  = v(lm,   C.HUB_SUM+i);
+    gmvMtdArr.push(gmM); gmvLmtdArr.push(gmLt); gmvLmArr.push(gmL);
+    gmvTotMtd += gmM; gmvTotLmtd += gmLt; gmvTotLm += gmL;
+  });
+
+  HUBS.forEach((hub, i) => {
+    const lnM=lnMtdArr[i], lnLt=lnLmtdArr[i], lnL=lnLmArr[i];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${hub}</td>
+      <td class="r" data-label="MTD #">${fmtNum(lnM)}</td>
+      <td class="r" data-label="MTD %">${lnTotMtd  ? fmtNum(lnM/lnTotMtd*100,1)+'%'  : '—'}</td>
+      <td class="r" data-label="LMTD #">${fmtNum(lnLt)}</td>
+      <td class="r" data-label="LMTD %">${lnTotLmtd ? fmtNum(lnLt/lnTotLmtd*100,1)+'%' : '—'}</td>
+      <td class="r" data-label="LM #">${fmtNum(lnL)}</td>
+      <td class="r" data-label="LM %">${lnTotLm   ? fmtNum(lnL/lnTotLm*100,1)+'%'   : '—'}</td>`;
+    loansBody.appendChild(tr);
+
+    const gmM=gmvMtdArr[i], gmLt=gmvLmtdArr[i], gmL=gmvLmArr[i];
+    const fmtG = (val) => u ? fmtNum(val/FX,2) : fmtNum(val);
+    const tr2 = document.createElement('tr');
+    tr2.innerHTML = `<td>${hub}</td>
+      <td class="r" data-label="MTD">${fmtG(gmM)}</td>
+      <td class="r" data-label="MTD %">${gmvTotMtd  ? fmtNum(gmM/gmvTotMtd*100,1)+'%'  : '—'}</td>
+      <td class="r" data-label="LMTD">${fmtG(gmLt)}</td>
+      <td class="r" data-label="LMTD %">${gmvTotLmtd ? fmtNum(gmLt/gmvTotLmtd*100,1)+'%' : '—'}</td>
+      <td class="r" data-label="LM">${fmtG(gmL)}</td>
+      <td class="r" data-label="LM %">${gmvTotLm   ? fmtNum(gmL/gmvTotLm*100,1)+'%'   : '—'}</td>`;
+    gmvBody.appendChild(tr2);
+  });
+
+  // Totals row
+  const totLn = document.createElement('tr');
+  totLn.className = 'bold';
+  totLn.innerHTML = `<td>Total</td>
+    <td class="r" data-label="MTD #">${fmtNum(lnTotMtd)}</td><td class="r" data-label="MTD %">100%</td>
+    <td class="r" data-label="LMTD #">${fmtNum(lnTotLmtd)}</td><td class="r" data-label="LMTD %">100%</td>
+    <td class="r" data-label="LM #">${fmtNum(lnTotLm)}</td><td class="r" data-label="LM %">100%</td>`;
+  loansBody.appendChild(totLn);
+
+  const fmtGt = (val) => u ? fmtNum(val/FX,1) : fmtNum(val);
+  const totGmv = document.createElement('tr');
+  totGmv.className = 'bold';
+  totGmv.innerHTML = `<td>Total</td>
+    <td class="r" data-label="MTD">${fmtGt(gmvTotMtd)}</td><td class="r" data-label="MTD %">100%</td>
+    <td class="r" data-label="LMTD">${fmtGt(gmvTotLmtd)}</td><td class="r" data-label="LMTD %">100%</td>
+    <td class="r" data-label="LM">${fmtGt(gmvTotLm)}</td><td class="r" data-label="LM %">100%</td>`;
+  gmvBody.appendChild(totGmv);
+}
+
+// ── Loan Tracker ──
+function renderLoanTracker(mtd, lmtd, lm) {
+  // Open ageing
+  const openAgeBody = document.getElementById('open-age-body');
+  openAgeBody.innerHTML = '';
+  let totOpenN=0, totOpenAUM=0;
+  const openNArr=[], openAUMArr=[];
+  AGE_BUCKETS.forEach((b, i) => {
+    const n2 = v(mtd, C.OPEN_AGE_N+i);
+    const a  = v(mtd, C.OPEN_AGE_SUM+i);
+    openNArr.push(n2); openAUMArr.push(a);
+    totOpenN += n2; totOpenAUM += a;
+  });
+  AGE_BUCKETS.forEach((bk, i) => {
+    const n2=openNArr[i], a=openAUMArr[i];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${bk}</td>
+      <td class="r" data-label="# Loans">${fmtNum(n2)}</td>
+      <td class="r" data-label="# %">${totOpenN  ? fmtNum(n2/totOpenN*100,1)+'%'  : '—'}</td>
+      <td class="r" data-label="AUM">${fmtNum(a)}</td>
+      <td class="r" data-label="AUM %">${totOpenAUM ? fmtNum(a/totOpenAUM*100,1)+'%' : '—'}</td>`;
+    openAgeBody.appendChild(tr);
+  });
+  const totTrOA = document.createElement('tr');
+  totTrOA.className = 'bold';
+  totTrOA.innerHTML = `<td>Total</td><td class="r" data-label="# Loans">${fmtNum(totOpenN)}</td><td class="r" data-label="# %">100%</td><td class="r" data-label="AUM">${fmtNum(totOpenAUM)}</td><td class="r" data-label="AUM %">100%</td>`;
+  openAgeBody.appendChild(totTrOA);
+
+  // Closed ageing
+  const closedAgeBody = document.getElementById('closed-age-body');
+  closedAgeBody.innerHTML = '';
+  let totCM=0, totCL2=0, totCLm=0;
+  const cMArr=[], cLtArr=[], cLmArr=[];
+  AGE_BUCKETS.forEach((bk, i) => {
+    const cm=v(mtd,C.CLOSED_AGE_N+i), cl=v(lmtd,C.CLOSED_AGE_N+i), clm=v(lm,C.CLOSED_AGE_N+i);
+    cMArr.push(cm); cLtArr.push(cl); cLmArr.push(clm);
+    totCM+=cm; totCL2+=cl; totCLm+=clm;
+  });
+  AGE_BUCKETS.forEach((bk, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${bk}</td>
+      <td class="r" data-label="MTD #">${fmtNum(cMArr[i])}</td>
+      <td class="r" data-label="MTD %">${totCM  ? fmtNum(cMArr[i]/totCM*100,1)+'%'  : '—'}</td>
+      <td class="r" data-label="LMTD #">${fmtNum(cLtArr[i])}</td>
+      <td class="r" data-label="LMTD %">${totCL2 ? fmtNum(cLtArr[i]/totCL2*100,1)+'%' : '—'}</td>
+      <td class="r" data-label="LM #">${fmtNum(cLmArr[i])}</td>
+      <td class="r" data-label="LM %">${totCLm ? fmtNum(cLmArr[i]/totCLm*100,1)+'%' : '—'}</td>`;
+    closedAgeBody.appendChild(tr);
+  });
+  const totTrCA = document.createElement('tr');
+  totTrCA.className = 'bold';
+  totTrCA.innerHTML = `<td>Total</td>
+    <td class="r" data-label="MTD #">${fmtNum(totCM)}</td><td class="r" data-label="MTD %">100%</td>
+    <td class="r" data-label="LMTD #">${fmtNum(totCL2)}</td><td class="r" data-label="LMTD %">100%</td>
+    <td class="r" data-label="LM #">${fmtNum(totCLm)}</td><td class="r" data-label="LM %">100%</td>`;
+  closedAgeBody.appendChild(totTrCA);
+
+  // Open ticket
+  const openTickBody = document.getElementById('open-ticket-body');
+  openTickBody.innerHTML = '';
+  let totOTN=0, totOTA=0;
+  const otNArr=[], otAArr=[];
+  TICK_BUCKETS.forEach((bk, i) => {
+    const n2=v(mtd,C.OPEN_TICK_N+i), a=v(mtd,C.OPEN_TICK_SUM+i);
+    otNArr.push(n2); otAArr.push(a);
+    totOTN+=n2; totOTA+=a;
+  });
+  TICK_BUCKETS.forEach((bk, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${bk}</td>
+      <td class="r" data-label="# Loans">${fmtNum(otNArr[i])}</td>
+      <td class="r" data-label="# %">${totOTN ? fmtNum(otNArr[i]/totOTN*100,1)+'%' : '—'}</td>
+      <td class="r" data-label="AUM">${fmtNum(otAArr[i])}</td>
+      <td class="r" data-label="AUM %">${totOTA ? fmtNum(otAArr[i]/totOTA*100,1)+'%' : '—'}</td>`;
+    openTickBody.appendChild(tr);
+  });
+  const totTrOT = document.createElement('tr');
+  totTrOT.className = 'bold';
+  totTrOT.innerHTML = `<td>Total</td><td class="r" data-label="# Loans">${fmtNum(totOTN)}</td><td class="r" data-label="# %">100%</td><td class="r" data-label="AUM">${fmtNum(totOTA)}</td><td class="r" data-label="AUM %">100%</td>`;
+  openTickBody.appendChild(totTrOT);
+
+  // Closed ticket
+  const closedTickBody = document.getElementById('closed-ticket-body');
+  closedTickBody.innerHTML = '';
+  let totCTM=0, totCTLt=0, totCTLm=0;
+  const ctMArr=[], ctLtArr=[], ctLmArr=[];
+  TICK_BUCKETS.forEach((bk, i) => {
+    const cm=v(mtd,C.CLOSED_TICK_N+i), cl=v(lmtd,C.CLOSED_TICK_N+i), clm=v(lm,C.CLOSED_TICK_N+i);
+    ctMArr.push(cm); ctLtArr.push(cl); ctLmArr.push(clm);
+    totCTM+=cm; totCTLt+=cl; totCTLm+=clm;
+  });
+  TICK_BUCKETS.forEach((bk, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${bk}</td>
+      <td class="r" data-label="MTD #">${fmtNum(ctMArr[i])}</td>
+      <td class="r" data-label="MTD %">${totCTM  ? fmtNum(ctMArr[i]/totCTM*100,1)+'%'  : '—'}</td>
+      <td class="r" data-label="LMTD #">${fmtNum(ctLtArr[i])}</td>
+      <td class="r" data-label="LMTD %">${totCTLt ? fmtNum(ctLtArr[i]/totCTLt*100,1)+'%' : '—'}</td>
+      <td class="r" data-label="LM #">${fmtNum(ctLmArr[i])}</td>
+      <td class="r" data-label="LM %">${totCTLm ? fmtNum(ctLmArr[i]/totCTLm*100,1)+'%' : '—'}</td>`;
+    closedTickBody.appendChild(tr);
+  });
+  const totTrCT = document.createElement('tr');
+  totTrCT.className = 'bold';
+  totTrCT.innerHTML = `<td>Total</td>
+    <td class="r" data-label="MTD #">${fmtNum(totCTM)}</td><td class="r" data-label="MTD %">100%</td>
+    <td class="r" data-label="LMTD #">${fmtNum(totCTLt)}</td><td class="r" data-label="LMTD %">100%</td>
+    <td class="r" data-label="LM #">${fmtNum(totCTLm)}</td><td class="r" data-label="LM %">100%</td>`;
+  closedTickBody.appendChild(totTrCT);
+}
+
+// ─── UI HELPERS ───────────────────────────────────────────────────────────────
+function set(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function setBar(id, pct) {
+  const el = document.getElementById(id);
+  if (el) el.style.width = Math.min(100, Math.max(0, pct)) + '%';
+}
+
+function showLoading(msg) {
+  document.getElementById('loading-text').textContent = msg || 'Loading…';
+  document.getElementById('loading-overlay').className = 'loading-overlay';
+  document.getElementById('loading-overlay').innerHTML = `
+    <div class="spinner"></div>
+    <div class="loading-text">${msg}</div>`;
+}
+
+function hideLoading() {
+  document.getElementById('loading-overlay').className = 'loading-overlay hidden';
+}
+
+function showError(msg) {
+  document.getElementById('loading-overlay').className = 'loading-overlay';
+  document.getElementById('loading-overlay').innerHTML = `
+    <div class="error-box">
+      <h3>Unable to load data</h3>
+      <p>${msg}<br><br>Make sure the Google Sheet is publicly accessible (Anyone with the link → Viewer).</p>
+      <button onclick="init()">Retry</button>
+    </div>`;
+}
+
+function updateDataStatus(mtdRow) {
+  const el = document.getElementById('data-status-summary');
+  if (!el) return;
+  if (!mtdRow) {
+    el.textContent = 'No data found for this date.';
+    el.className = 'data-status stale';
+    return;
+  }
+  if (dataLoadedAt) {
+    // Show in Jakarta time (WIB, UTC+7)
+    const wib = new Date(dataLoadedAt.getTime() + 7 * 60 * 60 * 1000);
+    const fmt = wib.toISOString().replace('T',' ').substring(0,16) + ' WIB';
+    el.textContent = `Sheet data as of ${fmt}`;
+  }
+  el.className = 'data-status';
+}
+
+function applyDateLabels(d) {
+  const display = toDateStr(d);
+  const cur  = toShortMon(d);
+  const prev = toShortMon(lmtdDate(d));
+  document.getElementById('rpt-date-display').textContent = display;
+  document.querySelectorAll('.rpt-date-inline').forEach(el => el.textContent = display);
+  document.querySelectorAll('.cur-mon').forEach(el => el.textContent = cur);
+  document.querySelectorAll('.prev-mon').forEach(el => el.textContent = prev);
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function toggleCurrency() {
+  currIsUSD = !currIsUSD;
+  document.getElementById('curr-toggle').classList.toggle('usd', currIsUSD);
+  document.getElementById('lbl-idr').style.opacity = currIsUSD ? '0.4' : '1';
+  document.getElementById('lbl-usd').style.opacity = currIsUSD ? '1' : '0.4';
+  const mio = currIsUSD ? '(USD Mio)' : '(IDR Mio)';
+  document.getElementById('kpi-disbamt-unit').textContent = mio;
+  document.getElementById('kpi-aum-unit').textContent = mio;
+  document.getElementById('kpi-avg-unit').textContent = currIsUSD ? '(USD K)' : '(IDR Mio)';
+  document.querySelectorAll('.txn-unit').forEach(el => el.textContent = mio);
+  document.querySelectorAll('.fin-unit').forEach(el => el.textContent = mio);
+  document.querySelectorAll('.gmv-unit').forEach(el => el.textContent = currIsUSD ? '(USD K)' : '(IDR Mio)');
+  if (selectedDate) renderAll(selectedDate);
+}
+
+function onDateChange(val) {
+  const [y,m,d] = val.split('-').map(Number);
+  selectedDate = new Date(y, m-1, d);
+  // Keep both date inputs in sync
+  const other = val === document.getElementById('rpt-date-input').value
+    ? document.getElementById('rpt-date-input-m')
+    : document.getElementById('rpt-date-input');
+  if (other) other.value = val;
+  applyDateLabels(selectedDate);
+  renderAll(selectedDate);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+async function init() {
+  const ok = await loadData();
+  if (!ok) return;
+
+  // Set date picker bounds: oldest = 2023-04-12, latest = today (updates each new day)
+  const input = document.getElementById('rpt-date-input');
+  const inputM = document.getElementById('rpt-date-input-m');
+  const today = new Date();
+  [input, inputM].forEach(el => { if(el){ el.min='2023-04-12'; el.max=toKey(today); }});
+
+  // Default to today or last populated date
+  const todayKey = toKey(today);
+  let defaultDate = today;
+  if (!dateMap[todayKey]) {
+    const keys = Object.keys(dateMap).filter(k => dateMap[k][C.DISB_N]).sort();
+    if (keys.length) defaultDate = dateFromKey(keys[keys.length-1]);
+  }
+
+  selectedDate = defaultDate;
+  input.value = toKey(defaultDate);
+  if (inputM) inputM.value = toKey(defaultDate);
+  applyDateLabels(defaultDate);
+  renderAll(defaultDate);
+}
+
+init();
+</script>
+</body>
+</html>
