@@ -1039,11 +1039,7 @@ function buildDateMap(json) {
 }
 
 async function fetchAndCache() {
-  const res = await fetch(DATA_URL, {
-    headers: {
-      'Authorization': `Bearer ${GH_TOKEN}`,
-    }
-  });
+  const res = await fetch(DATA_URL);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const json = await res.json();
   if (!json.rows || json.rows.length === 0) throw new Error('No data rows found');
