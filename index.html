@@ -360,8 +360,8 @@ tr:hover td{background:rgba(255,248,245,0.7)}
   -webkit-backdrop-filter:blur(32px) saturate(200%);
   border-radius:28px;
   padding:36px 32px 28px;
-  width:340px;
-  display:flex;flex-direction:column;align-items:center;gap:0;
+  width:360px;
+  display:flex;flex-direction:column;align-items:center;
 }
 .lock-icon-box{
   width:62px;height:62px;border-radius:18px;
@@ -373,37 +373,22 @@ tr:hover td{background:rgba(255,248,245,0.7)}
 }
 .lock-icon-box svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .lock-title{font-size:17px;font-weight:600;color:var(--text);letter-spacing:-0.3px;margin-bottom:6px;text-align:center}
-.lock-sub{font-size:12px;color:var(--text3);margin-bottom:22px;text-align:center}
-.lock-input-wrap{position:relative;width:100%;margin-bottom:8px}
-.lock-input{
-  width:100%;padding:11px 40px 11px 14px;
-  border:1px solid var(--border2);border-radius:10px;
-  background:rgba(255,255,255,0.80);
-  font-size:14px;color:var(--text);
-  outline:none;transition:border-color 0.15s,box-shadow 0.15s;
-  font-family:inherit;
+.lock-sub{font-size:12px;color:var(--text3);margin-bottom:22px;text-align:center;line-height:1.6}
+.lock-error-msg{font-size:11px;color:#DC2626;margin-top:10px;min-height:16px;text-align:center}
+.lock-footer{font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.06em;text-align:center;margin-top:20px}
+.google-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:11px 16px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,0.12);
+  border-radius:10px;
+  font-size:14px;font-weight:500;color:#3c4043;
+  cursor:pointer;font-family:inherit;
+  box-shadow:0 1px 3px rgba(0,0,0,0.08);
+  transition:box-shadow 0.15s,background 0.15s;
 }
-.lock-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(232,70,30,0.10)}
-.lock-input.error{border-color:#DC2626;box-shadow:0 0 0 3px rgba(220,38,38,0.10);animation:shake 0.4s ease}
-.lock-eye{
-  position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  background:none;border:none;cursor:pointer;padding:2px;
-  color:#D1D5DB;display:flex;align-items:center;
-}
-.lock-eye:hover{color:#9CA3AF}
-.lock-eye svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.lock-error-msg{font-size:11px;color:#DC2626;margin-bottom:10px;min-height:16px;text-align:center}
-.lock-btn{
-  width:100%;padding:12px;
-  background:linear-gradient(135deg,#F97316,#E8461E);
-  color:#fff;border:none;border-radius:10px;
-  font-size:14px;font-weight:600;cursor:pointer;
-  transition:opacity 0.15s,transform 0.15s;
-  font-family:inherit;margin-bottom:20px;
-}
-.lock-btn:hover{opacity:0.92;transform:translateY(-1px)}
-.lock-btn:active{transform:translateY(0)}
-.lock-footer{font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.06em;text-align:center}
+.google-btn:hover{box-shadow:0 2px 8px rgba(0,0,0,0.12);background:#f8f8f8}
+.google-btn img{width:20px;height:20px}
 @keyframes shake{
   0%,100%{transform:translateX(0)}
   20%{transform:translateX(-6px)}
@@ -411,27 +396,28 @@ tr:hover td{background:rgba(255,248,245,0.7)}
   60%{transform:translateX(-4px)}
   80%{transform:translateX(4px)}
 }
+.lock-card.shake{animation:shake 0.4s ease}
 
 </style>
 </head>
 <body>
 
+<!-- Google Sign-In SDK -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <!-- Lock Screen -->
 <div class="lock-overlay" id="lock-overlay">
-  <div class="lock-card">
+  <div class="lock-card" id="lock-card">
     <div class="lock-icon-box">
       <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </div>
     <div class="lock-title">DIF Flash Report</div>
-    <div class="lock-sub">Enter your password to continue</div>
-    <div class="lock-input-wrap">
-      <input class="lock-input" id="lock-input" type="password" placeholder="Password" onkeydown="lockKeyDown(event)">
-      <button class="lock-eye" id="lock-eye" onclick="toggleLockEye()" tabindex="-1">
-        <svg id="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-      </button>
-    </div>
+    <div class="lock-sub">Sign in with your CarDekho Group account<br>to access this dashboard</div>
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      Sign in with Google
+    </button>
     <div class="lock-error-msg" id="lock-error"></div>
-    <button class="lock-btn" onclick="tryUnlock()">Unlock</button>
     <div class="lock-footer">OTO.com · Dealer Inventory Financing</div>
   </div>
 </div>
@@ -1543,52 +1529,61 @@ if (!checkLock()) {
 
 
 // ─── LOCK SCREEN ──────────────────────────────────────────────────────────────
-const PASS = 'oto1234';
+const GOOGLE_CLIENT_ID  = '525698671119-hla75kbh2g6qo9org66tr3ths3mceotf.apps.googleusercontent.com';
+const ALLOWED_DOMAINS   = ['cardekho.com', 'otosupport.com'];
 
 function checkLock() {
   if (sessionStorage.getItem('dif_unlocked') === '1') {
     document.getElementById('lock-overlay').className = 'lock-overlay hidden';
     return true;
   }
-  // Focus input after short delay
-  setTimeout(() => document.getElementById('lock-input')?.focus(), 100);
   return false;
 }
 
-function tryUnlock() {
-  const input = document.getElementById('lock-input');
+function signInWithGoogle() {
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: 'email profile',
+    callback: handleGoogleResponse,
+  });
+  client.requestAccessToken();
+}
+
+async function handleGoogleResponse(tokenResponse) {
+  if (tokenResponse.error) {
+    showLockError('Sign-in failed. Please try again.');
+    return;
+  }
+  try {
+    // Fetch user info using the access token
+    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { 'Authorization': 'Bearer ' + tokenResponse.access_token }
+    });
+    const user = await res.json();
+    const email = user.email || '';
+    const domain = email.split('@')[1]?.toLowerCase();
+
+    if (ALLOWED_DOMAINS.includes(domain)) {
+      sessionStorage.setItem('dif_unlocked', '1');
+      sessionStorage.setItem('dif_user_email', email);
+      const overlay = document.getElementById('lock-overlay');
+      overlay.classList.add('unlocking');
+      setTimeout(() => overlay.classList.add('hidden'), 360);
+      init();
+    } else {
+      showLockError(`Access denied. Only @cardekho.com and @otosupport.com accounts are allowed.`);
+    }
+  } catch(e) {
+    showLockError('Verification failed. Please try again.');
+  }
+}
+
+function showLockError(msg) {
   const error = document.getElementById('lock-error');
-  if (input.value === PASS) {
-    sessionStorage.setItem('dif_unlocked', '1');
-    const overlay = document.getElementById('lock-overlay');
-    overlay.classList.add('unlocking');
-    setTimeout(() => overlay.classList.add('hidden'), 360);
-    init();
-  } else {
-    input.classList.add('error');
-    error.textContent = 'Incorrect password. Please try again.';
-    input.value = '';
-    setTimeout(() => {
-      input.classList.remove('error');
-      input.focus();
-    }, 500);
-  }
-}
-
-function lockKeyDown(e) {
-  if (e.key === 'Enter') tryUnlock();
-}
-
-function toggleLockEye() {
-  const input = document.getElementById('lock-input');
-  const icon  = document.getElementById('eye-icon');
-  if (input.type === 'password') {
-    input.type = 'text';
-    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
-  } else {
-    input.type = 'password';
-    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-  }
+  const card  = document.getElementById('lock-card');
+  error.textContent = msg;
+  card.classList.add('shake');
+  setTimeout(() => card.classList.remove('shake'), 400);
 }
 
 </script>
